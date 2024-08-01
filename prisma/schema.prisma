@@ -1,51 +1,82 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL_TEST")
+  url      = env("DATABASE_URL")
 }
 
-model Notes {
-  id         String     @id
-  title      String     @unique @db.VarChar(200)
-  body       String     @db.Text
-  tags       String     @db.VarChar(200)
-  updated_at DateTime   @default(now())
-  owner      String
-  cover      String     @default("")
-  comments   Comments[]
+model Blacklist {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @default(uuid())
+  token     String
+  ip        String
+  userUUID  String
+  createdAt DateTime @default(now())
 }
 
-model Users {
-  id       String     @id
-  username String     @unique @db.VarChar(20)
-  fullname String
-  email    String
-  password String     @db.VarChar(100)
-  comments Comments[]
+model Profile {
+  id           Int       @id @default(autoincrement())
+  uuid         String    @default(uuid())
+  slug         String    @unique @db.VarChar(167)
+  name         String    @db.VarChar(80)
+  nickname     String?   @db.VarChar(80)
+  avatar       String?
+  lastAccessAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId       Int       @unique
 }
 
-model Authentications {
+model User {
+  id              Int       @id @default(autoincrement())
+  uuid            String    @default(uuid())
+  email           String    @unique
+  password        String
+  profile         Profile?
+  emailVerified   Boolean   @default(false)
+  verifiedToken   String?
+  verifiedExpires DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  ChatTTS         ChatTTS?
+  Group           Group?
+}
+
+model Authentication {
   token String @unique
 }
 
-model Collaborations {
-  id      String @id
-  note_id String @db.VarChar(100)
-  user_id String @db.VarChar(100)
+model Group {
+  id      Int       @id @default(autoincrement())
+  uuid    String    @default(uuid())
+  slug    String    @unique
+  name    String    @db.VarChar(80)
+  icon    String    @db.VarChar(40)
+  chatTTS ChatTTS[]
+  userId  Int       @unique
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
-model Comments {
-  id         String   @id
-  body       String   @db.Text
-  owner      String
-  users      Users    @relation(fields: [owner], references: [id])
-  noteId     String
-  notes      Notes    @relation(fields: [noteId], references: [id])
-  updated_at DateTime @default(now())
+model ChatTTS {
+  id         Int      @id @default(autoincrement())
+  uuid       String   @default(uuid())
+  slug       String   @unique @db.VarChar(167)
+  name       String   @db.VarChar(80)
+  promptText String
+  urlFile    String
+  userId     Int      @unique
+  groupId    Int      @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

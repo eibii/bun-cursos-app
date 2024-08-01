@@ -3,7 +3,13 @@
   "version": "1.0.50",
   "scripts": {
     "test": "bun test ./test/**.test.ts",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "prisma:generate": "bunx prisma generate",
+    "prisma:push": "bunx prisma db push",
+    "prisma:seed": "bun prisma/seed.ts",
+    "prisma:studio": "bunx prisma studio",
+    "prisma:format": "bunx prisma format",
+    "prisma:migrate": "bunx prisma migrate dev"
   },
   "dependencies": {
     "@elysiajs/bearer": "^0.7.0",
@@ -14,10 +20,13 @@
     "@prisma/client": "^5.4.2",
     "elysia": "latest",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^5.4.2",
-    "uuid": "^9.0.1"
+    "lodash-es": "^4.17.21",
+    "nodemailer": "^6.9.14",
+    "prisma": "^5.4.2"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "@types/nodemailer": "^6.4.15",
     "bun-types": "latest"
   },
   "module": "src/index.js"

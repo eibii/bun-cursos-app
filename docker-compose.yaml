@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  db: # Container do PostgreSQL
+    container_name: bun_postgres_db
+    image: postgres:15.2-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - ${DB_PORT}:5432
+
+  # bun_app: # Container da Aplicação
+  #   image: 'oven/bun:latest'
+  #   entrypoint: []
+  #   command: "/bin/sh -c 'bun install && bun run --watch src/index.ts'"
+  #   env_file: .env
+  #   ports:
+  #     - ${API_PORT}:3000
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - .:/home/bun/app
+
+volumes:
+  pgdata:
