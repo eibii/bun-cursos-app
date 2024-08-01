@@ -15,7 +15,7 @@ export const chatsHandler = {
     };
   },
 
-  createChat: async ({ body, set, cookie: { auth }, jwt  }) => {
+  createChat: async ({ body, set, cookie: { auth }, jwt }) => {
     const { uuid } = await jwt.verify(auth);
     const chat = await chatsService.createChat(body, uuid);
     set.status = 201;
@@ -52,6 +52,12 @@ export const chatsHandler = {
     promptText: t.String(),
     urlFile: t.String(),
     groupUuid: t.String(),
+    quality: t.String({
+      enum: ["hd", "sd"],
+    }),
+    voice: t.String({
+      enum: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"],
+    }),
   }),
 
   validateQueryGet: t.Object({

@@ -2,6 +2,7 @@ import { NotFoundError } from "elysia";
 import { PrismaClient } from "@prisma/client";
 import { InvariantError } from "../exceptions/InvariantError";
 import { ConflictError } from "../exceptions/ConflictError";
+import OpenAI from "openai";
 
 const db = new PrismaClient();
 
@@ -11,6 +12,8 @@ type CreateChatPayload = {
   promptText: string;
   urlFile: string;
   groupUuid: string;
+  quality: "hd" | "sd";
+  voice: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
 };
 
 export const chatsService = {
@@ -102,6 +105,33 @@ export const chatsService = {
     });
 
     if (!group) throw new NotFoundError("group-not-found");
+
+    const { OPENAI_API_KEY, OPENAI_ORG_ID, OPENAI_PROJ_ID } = process.env;
+    const { voice, quality, promptText } = payload;
+
+    // Crie uma nova instância do OpenAI
+    const openai = new OpenAI({
+      apiKey: OPENAI_API_KEY,
+      organization: OPENAI_ORG_ID,
+      project: OPENAI_PROJ_ID,
+    });
+
+    // Chamada para criar um áudio
+    const mp3 = await openai.audio.speech
+      .create({
+        model: quality === "hd" ? "tts-1-hd" : "tts-1",
+        voice,
+        input: promptText,
+      })
+      .catch((err) => {
+        console.error(err);
+        throw new InvariantError("openai-error-create-audio");
+      });
+
+    // Converta o áudio para um ArrayBuffer
+    const arrBuffer = await mp3.arrayBuffer();
+
+    console.log("arrBuffer", arrBuffer);
 
     const chat = await db.chatTTS.create({
       data: {
