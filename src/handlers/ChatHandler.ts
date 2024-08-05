@@ -41,16 +41,11 @@ export const chatsHandler = {
   },
 
   validateCreateChat: t.Object({
-    slug: t.String({
-      minLength: 1,
-      maxLength: 167,
-    }),
     name: t.String({
       minLength: 1,
       maxLength: 167,
     }),
     promptText: t.String(),
-    urlFile: t.String(),
     groupUuid: t.String(),
     quality: t.String({
       enum: ["hd", "sd"],

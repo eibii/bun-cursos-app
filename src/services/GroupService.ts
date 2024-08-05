@@ -6,14 +6,12 @@ import { ConflictError } from "../exceptions/ConflictError";
 const db = new PrismaClient();
 
 type CreateGroupPayload = {
-  slug: string;
   name: string;
   icon: string;
 };
 
 type UpdateGroupPayload = {
   uuid: string;
-  slug: string;
   name: string;
   icon: string;
 };
@@ -28,7 +26,6 @@ export const groupsService = {
       },
       select: {
         uuid: true,
-        slug: true,
         name: true,
         icon: true,
       },
@@ -36,17 +33,6 @@ export const groupsService = {
   },
 
   createGroup: async (payload: CreateGroupPayload, userUuid: string) => {
-    const groupExist = await db.group.findFirst({
-      where: {
-        slug: payload.slug,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (groupExist) throw new ConflictError("group-exist");
-
     const user = await db.user.findFirst({
       where: {
         uuid: userUuid,
@@ -58,9 +44,20 @@ export const groupsService = {
 
     if (!user) throw new NotFoundError("user-not-found");
 
+    const groupExist = await db.group.findFirst({
+      where: {
+        userId: user.id,
+        name: payload.name,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (groupExist) throw new ConflictError("group-exist");
+
     const group = await db.group.create({
       data: {
-        slug: payload.slug,
         name: payload.name,
         icon: payload.icon,
         user: {
@@ -84,7 +81,6 @@ export const groupsService = {
         uuid: payload.uuid,
       },
       data: {
-        slug: payload.slug,
         name: payload.name,
         icon: payload.icon,
       },
@@ -103,7 +99,6 @@ export const groupsService = {
       },
       select: {
         uuid: true,
-        slug: true,
         name: true,
         icon: true,
       },

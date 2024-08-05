@@ -2,15 +2,15 @@ import { NotFoundError } from "elysia";
 import { PrismaClient } from "@prisma/client";
 import { InvariantError } from "../exceptions/InvariantError";
 import { ConflictError } from "../exceptions/ConflictError";
-import OpenAI from "openai";
+import { openai } from "../lib/openAI";
+import { uploadService } from "./BucketService";
+import * as _ from "lodash-es";
 
 const db = new PrismaClient();
 
 type CreateChatPayload = {
-  slug: string;
   name: string;
   promptText: string;
-  urlFile: string;
   groupUuid: string;
   quality: "hd" | "sd";
   voice: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
@@ -57,14 +57,12 @@ export const chatsService = {
       },
       select: {
         uuid: true,
-        slug: true,
         name: true,
         promptText: true,
         urlFile: true,
         group: {
           select: {
             uuid: true,
-            slug: true,
             name: true,
           },
         },
@@ -73,17 +71,6 @@ export const chatsService = {
   },
 
   createChat: async (payload: CreateChatPayload, userUuid: string) => {
-    const chatExist = await db.chatTTS.findFirst({
-      where: {
-        slug: payload.slug,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (chatExist) throw new ConflictError("chat-exist");
-
     const user = await db.user.findFirst({
       where: {
         uuid: userUuid,
@@ -106,15 +93,18 @@ export const chatsService = {
 
     if (!group) throw new NotFoundError("group-not-found");
 
-    const { OPENAI_API_KEY, OPENAI_ORG_ID, OPENAI_PROJ_ID } = process.env;
-    const { voice, quality, promptText } = payload;
-
-    // Crie uma nova instância do OpenAI
-    const openai = new OpenAI({
-      apiKey: OPENAI_API_KEY,
-      organization: OPENAI_ORG_ID,
-      project: OPENAI_PROJ_ID,
+    const { name, voice, quality, promptText } = payload;
+    const filename = `${userUuid}_${_.camelCase(name)}.mp3`;
+    const audioExists = await db.chatTTS.findFirst({
+      where: {
+        filename,
+      },
+      select: {
+        id: true,
+      },
     });
+
+    if (audioExists) throw new ConflictError("audio-exist");
 
     // Chamada para criar um áudio
     const mp3 = await openai.audio.speech
@@ -128,17 +118,16 @@ export const chatsService = {
         throw new InvariantError("openai-error-create-audio");
       });
 
-    // Converta o áudio para um ArrayBuffer
     const arrBuffer = await mp3.arrayBuffer();
-
-    console.log("arrBuffer", arrBuffer);
-
+    const buffer = Buffer.from(arrBuffer);
+    await uploadService.uploadBucket(buffer, filename, "audio/mpeg");
+    const urlFile = await uploadService.getUrlBucket(filename);
     const chat = await db.chatTTS.create({
       data: {
-        slug: payload.slug,
-        name: payload.name,
-        promptText: payload.promptText,
-        urlFile: payload.urlFile,
+        name,
+        promptText,
+        urlFile,
+        filename: filename,
         user: {
           connect: {
             id: user.id,
@@ -168,14 +157,12 @@ export const chatsService = {
       },
       select: {
         uuid: true,
-        slug: true,
         name: true,
         promptText: true,
         urlFile: true,
         group: {
           select: {
             uuid: true,
-            slug: true,
             name: true,
           },
         },

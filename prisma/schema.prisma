@@ -58,7 +58,6 @@ model Authentication {
 model Group {
   id      Int       @id @default(autoincrement())
   uuid    String    @default(uuid())
-  slug    String    @unique
   name    String    @db.VarChar(80)
   icon    String    @db.VarChar(40)
   chatTTS ChatTTS[]
@@ -69,9 +68,9 @@ model Group {
 model ChatTTS {
   id         Int      @id @default(autoincrement())
   uuid       String   @default(uuid())
-  slug       String   @unique @db.VarChar(167)
   name       String   @db.VarChar(80)
   promptText String
+  filename   String   @unique
   urlFile    String
   userId     Int      @unique
   groupId    Int      @unique
