@@ -20,6 +20,8 @@ model Blacklist {
   ip        String
   userUUID  String
   createdAt DateTime @default(now())
+
+  @@index([uuid])
 }
 
 model Profile {
@@ -34,6 +36,9 @@ model Profile {
   updatedAt    DateTime  @updatedAt
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId       Int       @unique
+
+  @@index([uuid, userId])
+  @@map("profiles")
 }
 
 model User {
@@ -49,10 +54,14 @@ model User {
   updatedAt       DateTime  @updatedAt
   ChatTTS         ChatTTS?
   Group           Group?
+
+  @@index([uuid, email])
 }
 
 model Authentication {
   token String @unique
+
+  @@index([token])
 }
 
 model Group {
@@ -63,6 +72,9 @@ model Group {
   chatTTS ChatTTS[]
   userId  Int       @unique
   user    User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([uuid, userId, name])
+  @@map("groups")
 }
 
 model ChatTTS {
@@ -78,4 +90,6 @@ model ChatTTS {
   updatedAt  DateTime @updatedAt
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([uuid, userId, groupId, filename])
 }

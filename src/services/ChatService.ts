@@ -127,7 +127,7 @@ export const chatsService = {
         name,
         promptText,
         urlFile,
-        filename: filename,
+        filename,
         user: {
           connect: {
             id: user.id,

@@ -9,12 +9,12 @@ const db = new PrismaClient();
 type CreateUserPayload = {
   email: string;
   password: string;
-}
+};
 
 type LoginPayload = {
   email: string;
   password: string;
-}
+};
 
 export const usersService = {
   getUsers: async () => {

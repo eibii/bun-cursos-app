@@ -43,10 +43,6 @@ export const groupsHandler = {
   },
 
   validateCreateGroup: t.Object({
-    slug: t.String({
-      minLength: 1,
-      maxLength: 167,
-    }),
     name: t.String({
       minLength: 1,
       maxLength: 167,
@@ -55,12 +51,6 @@ export const groupsHandler = {
   }),
 
   validateUpdateGroup: t.Object({
-    slug: t.Optional(
-      t.String({
-        minLength: 1,
-        maxLength: 167,
-      })
-    ),
     name: t.Optional(
       t.String({
         minLength: 1,

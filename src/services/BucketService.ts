@@ -25,8 +25,6 @@ export const uploadService = {
       const res = await r2.send(putObjectCommand);
       return res;
     } catch (error) {
-      console.log("error", error);
-
       throw new InternalServerError("upload-failed");
     }
   },
