@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
 import { NotFoundError } from "elysia";
 import { InvariantError } from "../exceptions/InvariantError";
-
-const db = new PrismaClient();
+import { db } from "../lib/db";
 
 export const authenticationService = {
   verifyRefreshToken: async (refresh_token: string) => {

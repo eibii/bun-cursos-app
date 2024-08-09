@@ -1,10 +1,8 @@
 import { NotFoundError } from "elysia";
-import { PrismaClient } from "@prisma/client";
 import { InvariantError } from "../exceptions/InvariantError";
 import { AuthorizationError } from "../exceptions/AuthorizationError";
 import { AuthenticationError } from "../exceptions/AuthenticationError";
-
-const db = new PrismaClient();
+import { db } from "../lib/db";
 
 type CreateUserPayload = {
   email: string;
@@ -16,50 +14,61 @@ type LoginPayload = {
   password: string;
 };
 
+const select = {
+  uuid: true,
+  email: true,
+  password: true,
+  createdAt: true,
+  updatedAt: true,
+  profile: {
+    select: {
+      uuid: true,
+      slug: true,
+      name: true,
+      nickname: true,
+      avatar: true,
+      lastAccessAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
+};
+
 export const usersService = {
-  getUsers: async () => {
+  getAll: async () => {
     return await db.user.findMany({
-      select: {
-        id: true,
-        uuid: true,
-        email: true,
-      },
+      select,
     });
   },
 
-  createUser: async (payload: CreateUserPayload) => {
+  create: async (payload: CreateUserPayload) => {
     const user = await db.user.create({
       data: {
         email: payload.email,
         password: payload.password,
       },
-      select: {
-        uuid: true,
-      },
+      select,
     });
 
     if (!user) throw new InvariantError("user-failed-add");
     return user;
   },
 
-  getUserByUuid: async (uuid: string) => {
+  getByUuid: async (uuid: string) => {
     const user = await db.user.findFirst({
       where: {
         uuid: {
           equals: uuid,
         },
       },
-      select: {
-        uuid: true,
-        email: true,
-      },
+      select,
     });
 
     if (!user) throw new NotFoundError("user-not-found");
     return user;
   },
 
-  deleteUser: async (uuid: string) => {
+  delete: async (uuid: string) => {
     const user = await db.user.findFirst({
       where: {
         uuid: {
@@ -97,7 +106,7 @@ export const usersService = {
     return getPassword.password;
   },
 
-  loginUser: async (body: LoginPayload) => {
+  login: async (body: LoginPayload) => {
     const user = await db.user.findFirst({
       where: {
         email: {
@@ -107,16 +116,14 @@ export const usersService = {
           equals: body.password,
         },
       },
-      select: {
-        uuid: true,
-      },
+      select,
     });
 
     if (!user) throw new AuthenticationError("email-or-password-invalid");
     return user;
   },
 
-  verifyUserByEmail: async (email: string) => {
+  verifyByEmail: async (email: string) => {
     const user = await db.user.findFirst({
       where: {
         email: {
@@ -125,6 +132,7 @@ export const usersService = {
       },
       select: {
         uuid: true,
+        emailVerified: true,
       },
     });
 
@@ -133,7 +141,7 @@ export const usersService = {
     return user;
   },
 
-  verifyUserByUuid: async (uuid: string) => {
+  verifyByUuid: async (uuid: string) => {
     const user = await db.user.findFirst({
       where: {
         uuid: {
@@ -146,14 +154,32 @@ export const usersService = {
   },
 
   verifyEmailIsAvailable: async (email: string) => {
-    const isAvailable = await db.user.findFirst({
+    const findUser = await db.user.findFirst({
       where: {
         email: {
           equals: email,
         },
       },
+      select: {
+        id: true,
+      },
     });
 
-    if (isAvailable) throw new InvariantError("email-already-exists");
+    if (!findUser) throw new InvariantError("email-already-exists");
+
+    const user = await db.user.update({
+      where: {
+        id: findUser.id,
+      },
+      data: {
+        emailVerified: true,
+      },
+      select: {
+        ...select,
+        emailVerified: true,
+      },
+    });
+
+    return user;
   },
 };

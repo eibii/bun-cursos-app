@@ -2,15 +2,15 @@ import { t } from "elysia";
 import { usersService } from "../services/UserService";
 
 export const usersHandler = {
-  getUsers: async () => {
-    const users = await usersService.getUsers();
+  getAll: async () => {
+    const users = await usersService.getAll();
     return {
       message: "get-success",
       data: users,
     };
   },
 
-  createUser: async ({ body, set }) => {
+  create: async ({ body, set }) => {
     await usersService.verifyEmailIsAvailable(body.email);
 
     const passwordHash = await Bun.password.hash(body.password, {
@@ -18,7 +18,7 @@ export const usersHandler = {
       cost: parseInt(process.env.BUN_COST),
     });
 
-    const user = await usersService.createUser({
+    const user = await usersService.create({
       ...body,
       password: passwordHash,
     });
@@ -26,8 +26,8 @@ export const usersHandler = {
     return { message: "create-success", data: user };
   },
 
-  getUserByUuid: async ({ set, params: { uuid } }) => {
-    const user = await usersService.getUserByUuid(uuid);
+  getByUuid: async ({ set, params: { uuid } }) => {
+    const user = await usersService.getByUuid(uuid);
 
     set.status = 200;
     return {
@@ -36,15 +36,15 @@ export const usersHandler = {
     };
   },
 
-  deleteUser: async ({ params: { uuid } }) => {
-    await usersService.deleteUser(uuid);
+  delete: async ({ params: { uuid } }) => {
+    await usersService.delete(uuid);
 
     return {
       message: `delete-success`,
     };
   },
 
-  loginUser: async ({ jwt, setCookie, body, set }) => {
+  login: async ({ jwt, setCookie, body, set }) => {
     const hashedPassword = await usersService.getPasswordByEmail(body.email);
     const isMatch = await Bun.password.verify(body.password, hashedPassword);
 
@@ -55,7 +55,7 @@ export const usersHandler = {
         message: `email-or-password-invalid`,
       };
     }
-    const login = await usersService.loginUser({
+    const login = await usersService.login({
       email: body.email,
       password: hashedPassword,
     });
@@ -79,7 +79,7 @@ export const usersHandler = {
     };
   },
 
-  validateCreateUser: t.Object({
+  validateCreate: t.Object({
     email: t.String({
       format: "email",
     }),

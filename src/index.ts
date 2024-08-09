@@ -11,10 +11,10 @@ import { AuthorizationError } from "./exceptions/AuthorizationError";
 import { InvariantError } from "./exceptions/InvariantError";
 import { ConflictError } from "./exceptions/ConflictError";
 
-import { configureUserRoutes } from "./routes/UserRoute";
-import { configureGroupRoutes } from "./routes/GroupRoute";
-import { configureChatRoutes } from "./routes/ChatRoute";
-import { configureAuthenticationRoutes } from "./routes/AuthenticationRoute";
+import configureUserRoutes from "./routes/UserRoute";
+import configureGroupRoutes from "./routes/GroupRoute";
+import configureChatRoutes from "./routes/ChatRoute";
+import configureAuthenticationRoutes from "./routes/AuthenticationRoute";
 
 export const app = new Elysia({
   prefix: process.env.BUN_PREFIX || "/api",
@@ -94,7 +94,7 @@ app
   .group("/groups", configureGroupRoutes)
   .group("/chats", configureChatRoutes)
   .group("/authentications", configureAuthenticationRoutes)
-  .listen(process.env.BUN_PORT || 3000);
+  .listen(process.env.BUN_PORT || 3030);
 
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`

@@ -1,20 +1,23 @@
 import { chatsHandler } from "../handlers/ChatHandler";
 import { apiMiddleware } from "../middleware/ApiMiddleware";
 
-export function configureChatRoutes(app) {
-  return app
-    .guard({ query: chatsHandler.validateQueryGet }, (guardApp) =>
-      guardApp.get("/", chatsHandler.getChats, {
+export default (app) =>
+  app
+    .guard({ query: chatsHandler.validateQuery }, (guardApp) =>
+      guardApp.get("/", chatsHandler.getAll, {
         beforeHandle: apiMiddleware,
       })
     )
-    .guard({ body: chatsHandler.validateCreateChat }, (guardApp) =>
-      guardApp.post("/", chatsHandler.createChat)
+    .guard({ body: chatsHandler.validateCreate }, (guardApp) =>
+      guardApp.post("/", chatsHandler.create)
     )
-    .get("/:uuid", chatsHandler.getChatByUuid, {
+    .guard({ body: chatsHandler.validateUpdate }, (guardApp) =>
+      guardApp.put("/", chatsHandler.update)
+    )
+
+    .get("/:uuid", chatsHandler.getByUuid, {
       beforeHandle: apiMiddleware,
     })
-    .delete("/:uuid", chatsHandler.deleteChat, {
+    .delete("/:uuid", chatsHandler.delete, {
       beforeHandle: apiMiddleware,
     });
-}

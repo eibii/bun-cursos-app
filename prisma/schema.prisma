@@ -52,10 +52,11 @@ model User {
   verifiedExpires DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  ChatTTS         ChatTTS?
-  Group           Group?
+  chats           Chat[]
+  groups          Group[]
 
   @@index([uuid, email])
+  @@map("users")
 }
 
 model Authentication {
@@ -65,19 +66,21 @@ model Authentication {
 }
 
 model Group {
-  id      Int       @id @default(autoincrement())
-  uuid    String    @default(uuid())
-  name    String    @db.VarChar(80)
-  icon    String    @db.VarChar(40)
-  chatTTS ChatTTS[]
-  userId  Int       @unique
-  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id        Int      @id @default(autoincrement())
+  uuid      String   @default(uuid())
+  name      String   @db.VarChar(80)
+  icon      String   @db.VarChar(40)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chats     Chat[]
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([uuid, userId, name])
   @@map("groups")
 }
 
-model ChatTTS {
+model Chat {
   id         Int      @id @default(autoincrement())
   uuid       String   @default(uuid())
   name       String   @db.VarChar(80)
@@ -92,4 +95,5 @@ model ChatTTS {
   group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([uuid, userId, groupId, filename])
+  @@map("chats")
 }

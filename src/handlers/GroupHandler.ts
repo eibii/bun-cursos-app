@@ -2,30 +2,32 @@ import { t } from "elysia";
 import { groupsService } from "../services/GroupService";
 
 export const groupsHandler = {
-  getGroups: async ({ cookie: { auth }, jwt }) => {
+  getAll: async ({ cookie: { auth }, jwt }) => {
     const { uuid } = await jwt.verify(auth);
-    const groups = await groupsService.getGroups(uuid);
+    const groups = await groupsService.getAll(uuid);
     return {
       message: "get-success",
       data: groups,
     };
   },
 
-  createGroup: async ({ body, set, cookie: { auth }, jwt }) => {
+  create: async ({ body, set, cookie: { auth }, jwt }) => {
     const { uuid } = await jwt.verify(auth);
-    const user = await groupsService.createGroup(body, uuid);
+    console.log("body", body);
+
+    const user = await groupsService.create(body, uuid);
     set.status = 201;
     return { message: "create-success", data: user };
   },
 
-  updateGroup: async ({ body, set }) => {
-    const user = await groupsService.updateGroup(body);
+  update: async ({ body, set }) => {
+    const user = await groupsService.update(body);
     set.status = 201;
     return { message: "create-success", data: user };
   },
 
-  getGroupByUuid: async ({ set, params: { uuid } }) => {
-    const user = await groupsService.getGroupByUuid(uuid);
+  getByUuid: async ({ set, params: { uuid } }) => {
+    const user = await groupsService.getByUuid(uuid);
 
     set.status = 200;
     return {
@@ -34,27 +36,28 @@ export const groupsHandler = {
     };
   },
 
-  deleteGroup: async ({ params: { uuid } }) => {
-    await groupsService.deleteGroup(uuid);
+  delete: async ({ params: { uuid } }) => {
+    await groupsService.delete(uuid);
 
     return {
       message: `delete-success`,
     };
   },
 
-  validateCreateGroup: t.Object({
+  validateCreate: t.Object({
     name: t.String({
       minLength: 1,
-      maxLength: 167,
+      maxLength: 80,
     }),
     icon: t.String(),
   }),
 
-  validateUpdateGroup: t.Object({
+  validateUpdate: t.Object({
+    uuid: t.String(),
     name: t.Optional(
       t.String({
         minLength: 1,
-        maxLength: 167,
+        maxLength: 80,
       })
     ),
     icon: t.Optional(t.String()),

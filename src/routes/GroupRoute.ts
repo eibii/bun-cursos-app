@@ -1,21 +1,23 @@
 import { groupsHandler } from "../handlers/GroupHandler";
 import { apiMiddleware } from "../middleware/ApiMiddleware";
 
-export function configureGroupRoutes(app) {
-  return app
-    .get("/", groupsHandler.getGroups, {
+export default (app) =>
+  app
+    .get("/", groupsHandler.getAll, {
       beforeHandle: apiMiddleware,
     })
-    .guard({ body: groupsHandler.validateCreateGroup }, (guardApp) =>
-      guardApp.post("/", groupsHandler.createGroup)
+    .guard({ body: groupsHandler.validateCreate }, (guardApp) =>
+      guardApp.post("/", groupsHandler.create)
     )
-    .guard({ body: groupsHandler.validateUpdateGroup }, (guardApp) =>
-      guardApp.put("/", groupsHandler.updateGroup)
+    .guard(
+      {
+        body: groupsHandler.validateUpdate,
+      },
+      (guardApp) => guardApp.put("/", groupsHandler.update)
     )
-    .get("/:uuid", groupsHandler.getGroupByUuid, {
+    .get("/:uuid", groupsHandler.getByUuid, {
       beforeHandle: apiMiddleware,
     })
-    .delete("/:uuid", groupsHandler.deleteGroup, {
+    .delete("/:uuid", groupsHandler.delete, {
       beforeHandle: apiMiddleware,
     });
-}

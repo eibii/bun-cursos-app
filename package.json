@@ -19,18 +19,18 @@
     "@elysiajs/cors": "^0.7.1",
     "@elysiajs/jwt": "^0.7.0",
     "@elysiajs/swagger": "^0.7.3",
-    "@prisma/client": "^5.4.2",
+    "@prisma/client": "^5.18.0",
     "elysia": "latest",
     "jsonwebtoken": "^9.0.2",
     "lodash-es": "^4.17.21",
     "nodemailer": "^6.9.14",
-    "openai": "^4.53.2",
-    "prisma": "^5.4.2"
+    "openai": "^4.53.2"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.12",
     "@types/nodemailer": "^6.4.15",
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "prisma": "^5.18.0"
   },
   "module": "src/index.js"
 }
